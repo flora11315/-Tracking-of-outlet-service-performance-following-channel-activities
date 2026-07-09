@@ -3,6 +3,6 @@ services:
     name: channel-activity-demo-workbench
     env: python
     plan: free
-    buildCommand: pip install -r outputs/channel_activity_demo/requirements.txt
-    startCommand: python outputs/channel_activity_demo/demo_workbench.py --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: python demo_workbench.py --host 0.0.0.0 --port $PORT
     autoDeploy: true
