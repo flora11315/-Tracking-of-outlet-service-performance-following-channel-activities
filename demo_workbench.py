@@ -557,7 +557,7 @@ HTML = r"""<!doctype html>
       ["匹配经营追踪", "03_经营追踪"],
       ["合并问卷反馈", "05_问卷反馈可选"],
       ["生成分析宽表", "标签/材料/建议"],
-      ["计算节点提醒", "T+7/T+30/T+90"],
+      ["计算节点提醒", "T+1/T+30/T+90"],
       ["生成飞书文案", "节点即时提醒"],
       ["输出邮件附件", "周报邮件 + Excel"]
     ];
@@ -590,7 +590,7 @@ HTML = r"""<!doctype html>
       const topMaterials = (data.material_top || []).slice(0, 3).map(x => x.name).join("、") || "-";
       document.getElementById("metrics").innerHTML = [
         metric("覆盖活动", s.events_read || 0, "上海片区"),
-        metric("节点提醒", s.node_alerts_generated || 0, "T+7/T+30/T+90"),
+        metric("节点提醒", s.node_alerts_generated || 0, "T+1/T+30/T+90"),
         metric("高优先级", high, "需负责人确认"),
         metric("优秀案例", data.excellent_case_count || 0, "可沉淀复用"),
         metric("高频材料", data.material_top?.length || 0, topMaterials)
