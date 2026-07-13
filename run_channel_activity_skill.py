@@ -363,9 +363,9 @@ def alert_to_dict(alert: NodeAlert) -> dict:
         "节点": alert.stage,
         "优先级": alert.priority,
         "关注分": round(alert.score, 1),
-        "提醒机制": "企业微信机器人节点提醒",
+        "提醒机制": "飞书机器人节点提醒",
         "提醒频率": alert.cadence,
-        "企微目标群": alert.wecom_group,
+        "飞书目标群": alert.wecom_group,
         "活动ID": alert.event_id,
         "活动日期": alert.event_date,
         "渠道名称": alert.channel_name,
@@ -408,9 +408,9 @@ def wecom_markdown(alert: NodeAlert) -> str:
 def write_wecom_messages(alerts: list[NodeAlert]) -> None:
     ordered = sorted(alerts, key=lambda a: (stage_sort_value(a.stage), priority_sort_value(a.priority), -a.score))
     lines = [
-        "# 企业微信机器人节点提醒文案",
+        "# 飞书机器人节点提醒文案",
         "",
-        "说明：短版企业微信提醒。材料需求若非问卷得出，会在“来源”中标注为经营信号推断或活动主题映射。",
+        "说明：短版飞书提醒。材料需求若非问卷得出，会在“来源”中标注为经营信号推断或活动主题映射。",
         "",
     ]
     payloads = []
