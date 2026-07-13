@@ -428,11 +428,11 @@ HTML = r"""<!doctype html>
   <header class="topbar">
     <div class="brand">
       <h1>渠道活动服务追踪 Agent Demo 工作台</h1>
-      <p>本地演示版：聚合到渠道/网点层级，不含个人客户 ID；企微与邮件发送为模拟流程。</p>
+      <p>本地演示版：聚合到渠道/网点层级，不含个人客户 ID；飞书推送与邮件发送为模拟流程。</p>
     </div>
     <div class="actions">
       <button class="button primary" id="runBtn">▶ 运行 Skill 分析</button>
-      <button class="button" id="sendBtn">✦ 模拟企微发送</button>
+      <button class="button" id="sendBtn">✦ 模拟飞书推送</button>
       <a class="button" href="/artifact?name=report">下载 Excel 附件</a>
     </div>
   </header>
@@ -442,7 +442,7 @@ HTML = r"""<!doctype html>
       <div class="section-head">
         <div>
           <h2>运行链路</h2>
-          <div class="hint">从模拟输入表开始，生成节点提醒、企业微信文案、邮件正文和 Excel 附件。</div>
+          <div class="hint">从模拟输入表开始，生成节点提醒、飞书推送文案、邮件正文和 Excel 附件。</div>
         </div>
         <div class="pill ok" id="lastRun">等待读取</div>
       </div>
@@ -490,13 +490,13 @@ HTML = r"""<!doctype html>
       <div class="section">
         <div class="section-head">
           <div>
-            <h2>企业微信提醒模拟</h2>
+            <h2>飞书推送模拟</h2>
             <div class="hint">展示节点触发后推送给渠道销售的短消息，含保有量观察与材料来源。</div>
           </div>
         </div>
         <div class="phone">
           <div class="phone-head">
-            <span>企业微信机器人｜上海片区渠道服务群</span>
+            <span>飞书机器人｜上海片区渠道服务群</span>
             <span id="sentCount">0 条</span>
           </div>
           <div class="messages" id="messages"></div>
@@ -558,7 +558,7 @@ HTML = r"""<!doctype html>
       ["合并问卷反馈", "05_问卷反馈可选"],
       ["生成分析宽表", "标签/材料/建议"],
       ["计算节点提醒", "T+7/T+30/T+90"],
-      ["生成企微文案", "节点即时提醒"],
+      ["生成飞书文案", "节点即时提醒"],
       ["输出邮件附件", "周报邮件 + Excel"]
     ];
     let latest = null;
@@ -653,7 +653,7 @@ HTML = r"""<!doctype html>
         ["模拟输入工作簿", "包含活动表、经营追踪、可选问卷反馈，用于演示数据来源。", "input_workbook"],
         ["邮件正文", "定期邮件正文预览，适合复制到真实邮件任务。", "email"],
         ["Excel 附件", "含提醒明细、活动汇总分析、Top 案例、图表数据。", "report"],
-        ["企微 payload", "企业微信机器人 markdown 消息结构示例。", "wecom_payloads"],
+        ["飞书 payload", "飞书机器人 markdown 消息结构示例。", "wecom_payloads"],
         ["分析宽表 CSV", "由已有活动和保有量数据生成的标签、材料需求、建议动作。", "analysis"]
       ];
       document.getElementById("artifacts").innerHTML = items.map(item => `
@@ -863,7 +863,7 @@ class DemoHandler(BaseHTTPRequestHandler):
                 capture_output=True,
                 timeout=120,
             )
-            payload = status_payload("Skill 运行完成，已刷新企微提醒、邮件正文和 Excel 附件。")
+            payload = status_payload("Skill 运行完成，已刷新飞书提醒、邮件正文和 Excel 附件。")
             payload["stdout"] = result.stdout[-3000:]
             self.send_json(payload)
         except subprocess.CalledProcessError as exc:
