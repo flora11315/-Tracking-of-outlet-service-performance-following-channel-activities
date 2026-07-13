@@ -223,7 +223,7 @@ def priority_for_stage(stage: str, row: pd.Series) -> tuple[str, int, str]:
     redemption = float(row.get("赎回压力_%", 0) or 0)
     label = str(row.get("服务效果标签", "观察跟踪"))
 
-    if stage == "T+7":
+    if stage == "T+1":
         if pd.notna(activity_score) and pd.notna(view_score) and (activity_score < 4.3 or view_score < 4.3):
             return "高", 3, "需负责人确认"
         if pd.notna(activity_score) and pd.notna(view_score) and (activity_score < 4.8 or view_score < 4.8):
@@ -251,7 +251,7 @@ def holding_signal(row: pd.Series) -> str:
 
 
 def short_signal(stage: str, row: pd.Series) -> str:
-    if stage == "T+7":
+    if stage == "T+1":
         if pd.notna(row.get("投教观点质量评分")) and row["投教观点质量评分"] < 4.5:
             return "投教反馈需优化"
         if pd.notna(row.get("活动质量评分")) and row["活动质量评分"] < 4.5:
@@ -272,7 +272,7 @@ def short_signal(stage: str, row: pd.Series) -> str:
 
 def short_action(stage: str, row: pd.Series, priority: str) -> str:
     material = row["材料需求"]
-    if stage == "T+7":
+    if stage == "T+1":
         return f"补充《{material}》" + (" + 复盘材料" if priority == "高" else "")
     if stage == "T+30":
         return f"安排15分钟短会 + 补充《{material}》" if priority == "高" else f"补充《{material}》并继续观察"
@@ -285,7 +285,7 @@ def short_action(stage: str, row: pd.Series, priority: str) -> str:
 
 def attention_score(stage: str, row: pd.Series, priority: str) -> float:
     score = {"高": 60, "中": 35, "低": 10}[priority]
-    score += {"T+7": 4, "T+30": 8, "T+90": 6}[stage]
+    score += {"T+1": 4, "T+30": 8, "T+90": 6}[stage]
     score += {"分行": 8, "支行": 5, "网点": 2}.get(str(row["活动层级"]), 0)
     if float(row["T+30保有量变化率_%"]) < 0:
         score += 10
@@ -327,7 +327,7 @@ def excellence_score(row: pd.Series) -> float:
 def make_alerts(df: pd.DataFrame) -> list[NodeAlert]:
     alerts: list[NodeAlert] = []
     for _, row in df.iterrows():
-        for stage in ["T+7", "T+30", "T+90"]:
+        for stage in ["T+1", "T+30", "T+90"]:
             priority, due_days, owner_action = priority_for_stage(stage, row)
             alerts.append(
                 NodeAlert(
@@ -335,7 +335,7 @@ def make_alerts(df: pd.DataFrame) -> list[NodeAlert]:
                     stage=stage,
                     priority=priority,
                     score=attention_score(stage, row, priority),
-                    cadence=f"节点触发：活动后第 {stage[2:]} 天",
+                    cadence="节点触发：活动后第二天" if stage == "T+1" else f"节点触发：活动后第 {stage[2:]} 天",
                     wecom_group=infer_wecom_group(row),
                     event_id=str(row["活动ID"]),
                     event_date=str(row["活动日期"]),
@@ -391,7 +391,7 @@ def priority_sort_value(priority: str) -> int:
 
 
 def stage_sort_value(stage: str) -> int:
-    return {"T+7": 0, "T+30": 1, "T+90": 2}.get(stage, 3)
+    return {"T+1": 0, "T+30": 1, "T+90": 2}.get(stage, 3)
 
 
 def wecom_markdown(alert: NodeAlert) -> str:
@@ -435,7 +435,7 @@ def write_wecom_messages(alerts: list[NodeAlert]) -> None:
 
 def chart_color(label: str) -> str:
     return {
-        "T+7": "#4C78A8",
+        "T+1": "#4C78A8",
         "T+30": "#F58518",
         "T+90": "#54A24B",
         "高": "#D95550",
@@ -491,7 +491,7 @@ def write_bar_chart(title: str, data: dict[str, int], path: Path, color_by_label
 def write_charts(df: pd.DataFrame, alerts: list[NodeAlert]) -> dict[str, Path]:
     CHART_DIR.mkdir(parents=True, exist_ok=True)
     alert_df = pd.DataFrame([alert_to_dict(a) for a in alerts])
-    stage_counts = alert_df["节点"].value_counts().reindex(["T+7", "T+30", "T+90"]).fillna(0).astype(int).to_dict()
+    stage_counts = alert_df["节点"].value_counts().reindex(["T+1", "T+30", "T+90"]).fillna(0).astype(int).to_dict()
     priority_counts = alert_df["优先级"].value_counts().reindex(["高", "中", "低"]).fillna(0).astype(int).to_dict()
     material_counts = df["材料需求"].value_counts().head(5).astype(int).to_dict()
     paths = {
@@ -555,7 +555,7 @@ def write_email_digest(df: pd.DataFrame, alerts: list[NodeAlert], focus: list[No
         "各位同事好，",
         "",
         "## 一句话结论",
-        f"本期 {len(df)} 场活动均已完成 T+7/T+30/T+90 节点追踪，其中 {focus_count} 个渠道建议重点陪伴，{reusable_count} 个小场案例可沉淀复用。",
+        f"本期 {len(df)} 场活动均已完成 T+1/T+30/T+90 节点追踪，其中 {focus_count} 个渠道建议重点陪伴，{reusable_count} 个小场案例可沉淀复用。",
         "",
         "## 本期概览",
         f"- 覆盖活动：{len(df)} 场",
@@ -584,7 +584,7 @@ def write_report_workbook(df: pd.DataFrame, alerts: list[NodeAlert], focus: list
     material_stats.columns = ["材料需求", "活动数"]
     material_source_stats = df["材料需求来源"].value_counts().reset_index()
     material_source_stats.columns = ["材料需求来源", "活动数"]
-    stage_stats = alert_df["节点"].value_counts().reindex(["T+7", "T+30", "T+90"]).fillna(0).reset_index()
+    stage_stats = alert_df["节点"].value_counts().reindex(["T+1", "T+30", "T+90"]).fillna(0).reset_index()
     stage_stats.columns = ["节点", "提醒数"]
     priority_stats = alert_df["优先级"].value_counts().reindex(["高", "中", "低"]).fillna(0).reset_index()
     priority_stats.columns = ["优先级", "提醒数"]
